@@ -4,13 +4,24 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 
 const app = express();
-app.use(cors());
+
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://statusboard-silk.vercel.app"
+];
+
+app.use(
+    cors({
+        origin: allowedOrigins
+    })
+);
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5174",
+        origin: allowedOrigins,
         methods: ["GET", "POST"]
     }
 });
@@ -18,6 +29,10 @@ const io = new Server(server, {
 let members = [];
 let history = [];
 let messages = [];
+
+app.get("/", (req, res) => {
+    res.send("StatusBoard backend is running");
+});
 
 function addHistory(text) {
     const time = new Date().toLocaleTimeString([], {
@@ -85,6 +100,8 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(3001, () => {
-    console.log("Serveur démarré sur le port 3001");
+const PORT = process.env.PORT || 3001;
+
+server.listen(PORT, () => {
+    console.log(`Serveur démarré sur le port ${PORT}`);
 });
